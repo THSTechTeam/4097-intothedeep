@@ -145,8 +145,8 @@ public class mecanumCode24 extends LinearOpMode
             // Code for double slides
             if (gamepad1.dpad_up)
             {
-                armL.setTargetPosition(-2500);
-                armR.setTargetPosition(2500);
+                armL.setTargetPosition(-2350);
+                armR.setTargetPosition(2350);
             }
             else if (gamepad1.dpad_down)
             {
@@ -251,6 +251,10 @@ public class mecanumCode24 extends LinearOpMode
 
         }
 
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         idle();
     }
 }

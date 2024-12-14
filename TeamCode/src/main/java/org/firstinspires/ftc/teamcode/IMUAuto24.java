@@ -51,11 +51,20 @@ public class IMUAuto24 extends LinearOpMode
                 )
         );
 
+        //Initializing IMU parameters
+        imu.initialize(myIMUparameters);
+
         double Yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
         waitForStart();
 
-        turn(90);
+        for(int i = 0; i < 3; i++){
+            imu.resetYaw();
+            turn(90);
+            telemetry.addData("loop", i);
+            telemetry.update();
+        }
+
         //AutonomousState state = INITIAL;
 
         //while(opModeIsActive())
@@ -80,14 +89,15 @@ public class IMUAuto24 extends LinearOpMode
     }
     public void turn (double degrees)
     {
-        double var = 5;
-        while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) != degrees)
+        double var = 3;
+        while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees + var
+                || imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees - var)
                 //< degrees - var || imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees + var )
         {
-            while (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees)
+            if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees)
             {
                 double x = (degrees - imu.getRobotYawPitchRollAngles().getYaw());
-                double speed = 0.00005 * (x * x);
+                double speed = 0.000225 * (x * x);
 
 
                 imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
@@ -98,10 +108,10 @@ public class IMUAuto24 extends LinearOpMode
                 //telemetry.addData("speed", speed);
                 //telemetry.update();
             }
-            while (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees)
+            else if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees)
             {
                 double x = (degrees - imu.getRobotYawPitchRollAngles().getYaw());
-                double speed = 0.00005 * (x * x);
+                double speed = 0.000225 * (x * x);
 
 
                 imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);

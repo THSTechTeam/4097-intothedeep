@@ -35,7 +35,7 @@ public class autoKeishiL24 extends LinearOpMode
     final double armScoreSpecimen = 160 * armTicksPerDegree;
     final double armScoreSampleInLow = 160 * armTicksPerDegree;
     final double armAttachHangingHook = 120 * armTicksPerDegree;
-    final double armWinchRobot = 15 * armTicksPerDegree;
+    final double armWinchRobot = 10 * armTicksPerDegree;
 
     // Value for intrake servo
     final double intakeCollect = -1.0;
@@ -46,7 +46,7 @@ public class autoKeishiL24 extends LinearOpMode
     final double wristFoldedIn = 0.9;
     final double wristFoldedOut  = 0.55;
 
-    double armPosition = (int)armCollapsedIntoRobot;
+    int armPosition = (int)armCollapsedIntoRobot;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -81,11 +81,15 @@ public class autoKeishiL24 extends LinearOpMode
                 )
         );
 
+        //Initializing IMU parameters
+        imu.initialize(myIMUparameters);
+
         waitForStart();
 
         armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setPower(0.2);
 
         // Setting intake and wrist at beginning position
         intake.setPower(intakeOff);
@@ -95,29 +99,32 @@ public class autoKeishiL24 extends LinearOpMode
         telemetry.addLine("Robot Ready.");
         telemetry.update();
 
+
         // The Robots final pathing
         armStart();
         moveForward(0.05);
         moveLeft(1.0);
         moveForward(1.5);
         imu.resetYaw();
-        turn(90);
+        turn(-90);
         moveForward(0.5);
-        armUp();
-
-
-
+        // armUp();
+        while (opModeIsActive()) {
+            idle();
+        }
 
     }
 
     public void turn (double degrees)
     {
-        while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) != degrees)
+        double var = 2;
+        while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees + var
+                || imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees - var)
         {
-            while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees)
+            if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees)
             {
                 double x = (degrees - imu.getRobotYawPitchRollAngles().getYaw());
-                double speed = 0.0001 * (x * x);
+                double speed = 0.000225 * (x * x);
 
 
                 imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
@@ -125,17 +132,13 @@ public class autoKeishiL24 extends LinearOpMode
                 frontRight.setPower(-speed);
                 backLeft.setPower(speed);
                 backRight.setPower(-speed);
-                telemetry.addData("speed", speed);
-                telemetry.update();
-                if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) > degrees + 3)
-                {
-                    break;
-                }
+                //telemetry.addData("speed", speed);
+                //telemetry.update();
             }
-            while(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees)
+            else if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees)
             {
                 double x = (degrees - imu.getRobotYawPitchRollAngles().getYaw());
-                double speed = 0.0001 * (x * x);
+                double speed = 0.000225 * (x * x);
 
 
                 imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
@@ -143,13 +146,8 @@ public class autoKeishiL24 extends LinearOpMode
                 frontRight.setPower(speed);
                 backLeft.setPower(-speed);
                 backRight.setPower(speed);
-                telemetry.addData("speed", speed);
-                telemetry.update();
-
-                if (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) < degrees - 3)
-                {
-                    break;
-                }
+                //telemetry.addData("speed", speed);
+                //telemetry.update();
             }
             telemetry.addData("Yaw", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
             telemetry.update();
@@ -157,9 +155,26 @@ public class autoKeishiL24 extends LinearOpMode
         imu.resetYaw();
     }
 
-    private void armStart() { armPosition = armWinchRobot; }
-    private void armUp() { armPosition = armAttachHangingHook; }
-    private void armDown() { armPosition = armScoreSpecimen; }
+    private void armStart()
+    {
+        armPosition = (int)armWinchRobot;
+        armMotor.setTargetPosition(armPosition);
+
+        telemetry.addLine("Arm Start Done");
+        telemetry.update();
+    }
+    private void armUp() {
+        armPosition = (int)armAttachHangingHook;
+        armMotor.setTargetPosition(armPosition);
+
+        telemetry.addLine("Arm Up Done");
+        telemetry.update();
+    }
+
+    private void armDown() {
+        armPosition = (int)armScoreSpecimen;
+        armMotor.setTargetPosition(armPosition);
+    }
     private void moveForward(double timeout)
     {
         elapsedTime.reset();
@@ -222,5 +237,14 @@ public class autoKeishiL24 extends LinearOpMode
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+    }
+
+    private void waitSec(long t) throws InterruptedException {
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        wait(t);
     }
 }
